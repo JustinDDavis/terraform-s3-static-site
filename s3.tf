@@ -1,5 +1,5 @@
-resource "aws_s3_bucket" "site_bucket" {
-  bucket  = var.name
+resource "aws_s3_bucket" "site_asset_storage" {
+  bucket  = var.site_project_name
 
   website {
     index_document = "index.html"
@@ -7,15 +7,15 @@ resource "aws_s3_bucket" "site_bucket" {
   }
 }
 
-resource "aws_s3_bucket_policy" "example" {
-  bucket = aws_s3_bucket.site_bucket.id
+resource "aws_s3_bucket_policy" "site_asset_bucket_policy" {
+  bucket = aws_s3_bucket.site_asset_storage.id
   policy = data.aws_iam_policy_document.s3_policy.json
 }
 
 data "aws_iam_policy_document" "s3_policy" {
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.site_bucket.arn}/*"]
+    resources = ["${aws_s3_bucket.site_asset_storage.arn}/*"]
 
     principals {
       type        = "AWS"
@@ -25,13 +25,17 @@ data "aws_iam_policy_document" "s3_policy" {
 }
 
 # Sync artifact to s3 bucket
-resource "aws_s3_bucket_object" "dist" {
-  for_each = fileset("./static_site", "*")
+resource "aws_s3_bucket_object" "site_asset_uploads" {
+  for_each = fileset("./${var.local_static_asset_directory}", "*")
 
-  bucket = var.name
+  bucket = var.site_project_name
   key    = each.value
-  source = "./static_site/${each.value}"
+  source = "./${var.local_static_asset_directory}/${each.value}"
   # etag makes the file update when it changes; see https://stackoverflow.com/questions/56107258/terraform-upload-file-to-s3-on-every-apply
-  etag   = filemd5("./static_site/${each.value}")
+  etag   = filemd5("./${var.local_static_asset_directory}/${each.value}")
   content_type  = "text/html"
+
+  depends_on = [
+    aws_s3_bucket.site_asset_storage
+  ]
 }
