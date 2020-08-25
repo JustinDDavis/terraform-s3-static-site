@@ -1,3 +1,54 @@
+# IAM POLICY REQUIRED FOR RESOURCES INCLUDED:
+# {
+#     "Version": "2012-10-17",
+#     "Statement": [
+#         {
+#             "Sid": "VisualEditor0",
+#             "Effect": "Allow",
+#             "Action": [
+#                 "s3:DeleteBucketWebsite",
+#                 "s3:PutBucketWebsite",
+#                 "s3:PutBucketAcl",
+#                 "s3:CreateBucket",
+#                 "s3:ListBucket",
+#                 "s3:DeleteBucket"
+#             ],
+#             "Resource": "arn:aws:s3:::<BUCKET>"
+#         },
+#         {
+#             "Sid": "",
+#             "Effect": "Allow",
+#             "Action": [
+#                 "s3:PutObject",
+#                 "s3:Get*",
+#                 "s3:DeleteObject"
+#             ],
+#             "Resource": "arn:aws:s3:::<BUCKET>/*"
+#         },
+#         {
+#             "Sid": "VisualEditor1",
+#             "Effect": "Allow",
+#             "Action": [
+#                 "s3:GetAccessPoint",
+#                 "s3:GetAccountPublicAccessBlock",
+#                 "s3:ListAccessPoints",
+#                 "s3:ListJobs",
+#                 "s3:HeadBucket"
+#             ],
+#             "Resource": "*"
+#         },
+#         {
+#             "Sid": "VisualEditor2",
+#             "Effect": "Allow",
+#             "Action": [
+#                 "s3:Get*",
+#                 "s3:PutBucketPolicy",
+#                 "s3:DeleteBucketPolicy"
+#             ],
+#             "Resource": "arn:aws:s3:::<BUCKET>"
+#         }
+#     ]
+# }
 resource "aws_s3_bucket" "site_asset_storage" {
   bucket  = var.site_project_name
 
@@ -24,7 +75,7 @@ data "aws_iam_policy_document" "s3_policy" {
   }
 }
 
-# Sync artifact to s3 bucket
+# # Sync artifact to s3 bucket
 resource "aws_s3_bucket_object" "site_asset_uploads" {
   for_each = fileset("./${var.local_static_asset_directory}", "*")
 

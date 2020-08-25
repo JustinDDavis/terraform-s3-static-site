@@ -35,21 +35,80 @@ In our case, we will provide access to 1) S3 and 2) CloudFront.
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "static_site_deployer",
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetAccessPoint",
+                "s3:ListAccessPoints",
+                "cloudfront:TagResource",
+                "cloudfront:DeleteCloudFrontOriginAccessIdentity",
+                "s3:ListJobs",
+                "cloudfront:CreateDistribution",
+                "cloudfront:CreateCloudFrontOriginAccessIdentity",
+                "s3:GetAccountPublicAccessBlock",
+                "cloudfront:UpdateCloudFrontOriginAccessIdentity",
+                "cloudfront:UpdateDistribution",
+                "s3:HeadBucket",
+                "cloudfront:DeleteDistribution",
+                "cloudfront:UntagResource"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "s3:DeleteBucketWebsite",
+                "s3:PutBucketWebsite",
+                "s3:PutBucketAcl",
+                "s3:CreateBucket",
+                "s3:ListBucket",
+                "s3:DeleteBucket"
+            ],
+            "Resource": "arn:aws:s3:::<site_project_name>"
+        },
+        {
+            "Sid": "VisualEditor2",
             "Effect": "Allow",
             "Action": [
                 "s3:PutObject",
-                "s3:CreateBucket",
-                "s3:ListBucket",
-                "s3:DeleteObject",
-                "s3:DeleteBucketPolicy",
-                "s3:DeleteBucket",
-                "s3:GetBucketPolicy"
+                "s3:DeleteObject"
+            ],
+            "Resource": "arn:aws:s3:::<site_project_name>/*"
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutBucketPolicy",
+                "s3:DeleteBucketPolicy"
+            ],
+            "Resource": "arn:aws:s3:::<site_project_name>"
+        },
+        {
+            "Sid": "VisualEditor4",
+            "Effect": "Allow",
+            "Action": [
+                "cloudfront:Get*",
+                "cloudfront:List*"
             ],
             "Resource": [
-                "arn:aws:s3:::<update>",
-                "arn:aws:s3:::<update>/*"
+                "arn:aws:cloudfront:::origin-access-identity/*",
+                "arn:aws:cloudfront:::distribution/*",
+                "arn:aws:cloudfront:::streaming-distribution/*"
             ]
+        },
+        {
+            "Sid": "VisualEditor5",
+            "Effect": "Allow",
+            "Action": "s3:Get*",
+            "Resource": "arn:aws:s3:::<site_project_name>/*"
+        },
+        {
+            "Sid": "VisualEditor6",
+            "Effect": "Allow",
+            "Action": "s3:Get*",
+            "Resource": "arn:aws:s3:::<site_project_name>"
         }
     ]
 }
