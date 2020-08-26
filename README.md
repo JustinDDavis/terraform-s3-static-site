@@ -237,3 +237,4 @@ To preview what is about to happen in your account, you can use the "plan" funct
 If the plan looks good, you can then move onto deploying. It will print the same information is plan, but this time you'll be prompted for a Yes/No before the changes will be deployed to the account.
 > terraform apply -var-file="example.tfvars" 
 
+After everything is deployed successfully and the CloudFront Distribution is setup, then you'll be provided a CloudFront URL that you can then use to access your website. 
