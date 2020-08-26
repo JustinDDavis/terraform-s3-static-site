@@ -223,9 +223,11 @@ risk that someone might commit sensitive credentials into Git if they don't just
 
 You'll need to update your "AWS_PROFILE" environment variable to match the profile name you specified above.
 Mac/Linux:
-> export AWS_PROFILE="static_site_deployer"
-Windows Powershell: 
-> $env:AWS_PROFILE="static_site_deployer"
+> export AWS_PROFILE="static_site_deployer"  
+
+
+Windows Powershell:   
+> $env:AWS_PROFILE="static_site_deployer"  
 
 ## Commands to deploy resources
 
