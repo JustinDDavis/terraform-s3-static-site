@@ -26,10 +26,55 @@ steps. They may help you troubleshoot using your Root account to grant additiona
 
 #### Creating IAM Policy
 
-1. Let's start with the IAM Policy first. This is a definition of "What" someone has access to Create/Read/Update/Delete. 
+Let's start with the IAM Policies first. This is a definition of "What" someone has access to Create/Read/Update/Delete. 
 In our case, we will provide access to 1) S3 and 2) CloudFront.
-2. Click "Policies" in the left panel. Then "Create Policy".
-3. Click the "JSON" tab, and paste the following in to get started (be sure to update the <update> sections)
+
+##### CloudFront Policy
+1. Click "Policies" in the left panel. Then "Create Policy".
+2. Click the "JSON" tab, and paste the following in to get started
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "cloudfront:TagResource",
+                "cloudfront:DeleteCloudFrontOriginAccessIdentity",
+                "cloudfront:UpdateCloudFrontOriginAccessIdentity",
+                "cloudfront:UpdateDistribution",
+                "cloudfront:CreateDistribution",
+                "cloudfront:DeleteDistribution",
+                "cloudfront:UntagResource",
+                "cloudfront:CreateCloudFrontOriginAccessIdentity"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "cloudfront:Get*",
+                "cloudfront:List*"
+            ],
+            "Resource": [
+                "arn:aws:cloudfront::*:distribution/*",
+                "arn:aws:cloudfront::*:origin-access-identity/*",
+                "arn:aws:cloudfront::*:streaming-distribution/*"
+            ]
+        }
+    ]
+}
+```
+4. Provide the policy a name "static_site_deployer_cloudfront"
+
+Note: There is additional opportunity to limit this even more by working with the wildcards. For getting started, this is still a good start. 
+
+##### S3 Policy
+1. If not already in the policy section, click "Policies" in the left panel. Then "Create Policy".
+2. Click the "JSON" tab, and paste the following in to get started (be sure to update the <update> section with the value you're going to use for your site_project_name)
+
 ```
 {
     "Version": "2012-10-17",
@@ -40,17 +85,9 @@ In our case, we will provide access to 1) S3 and 2) CloudFront.
             "Action": [
                 "s3:GetAccessPoint",
                 "s3:ListAccessPoints",
-                "cloudfront:TagResource",
-                "cloudfront:DeleteCloudFrontOriginAccessIdentity",
                 "s3:ListJobs",
-                "cloudfront:CreateDistribution",
-                "cloudfront:CreateCloudFrontOriginAccessIdentity",
                 "s3:GetAccountPublicAccessBlock",
-                "cloudfront:UpdateCloudFrontOriginAccessIdentity",
-                "cloudfront:UpdateDistribution",
-                "s3:HeadBucket",
-                "cloudfront:DeleteDistribution",
-                "cloudfront:UntagResource"
+                "s3:HeadBucket"
             ],
             "Resource": "*"
         },
@@ -61,11 +98,13 @@ In our case, we will provide access to 1) S3 and 2) CloudFront.
                 "s3:DeleteBucketWebsite",
                 "s3:PutBucketWebsite",
                 "s3:PutBucketAcl",
+                "s3:PutBucketPolicy",
                 "s3:CreateBucket",
                 "s3:ListBucket",
+                "s3:DeleteBucketPolicy",
                 "s3:DeleteBucket"
             ],
-            "Resource": "arn:aws:s3:::<site_project_name>"
+            "Resource": "arn:aws:s3:::<update>"
         },
         {
             "Sid": "VisualEditor2",
@@ -74,46 +113,23 @@ In our case, we will provide access to 1) S3 and 2) CloudFront.
                 "s3:PutObject",
                 "s3:DeleteObject"
             ],
-            "Resource": "arn:aws:s3:::<site_project_name>/*"
+            "Resource": "arn:aws:s3:::<update>/*"
         },
         {
             "Sid": "VisualEditor3",
             "Effect": "Allow",
-            "Action": [
-                "s3:PutBucketPolicy",
-                "s3:DeleteBucketPolicy"
-            ],
-            "Resource": "arn:aws:s3:::<site_project_name>"
-        },
-        {
-            "Sid": "VisualEditor4",
-            "Effect": "Allow",
-            "Action": [
-                "cloudfront:Get*",
-                "cloudfront:List*"
-            ],
+            "Action": "s3:Get*",
             "Resource": [
-                "arn:aws:cloudfront:::origin-access-identity/*",
-                "arn:aws:cloudfront:::distribution/*",
-                "arn:aws:cloudfront:::streaming-distribution/*"
+                "arn:aws:s3:::<update>",
+                "arn:aws:s3:::<update>/*",
+                "arn:aws:s3::*:job/*",
+                "arn:aws:s3::*:accesspoint/*"
             ]
-        },
-        {
-            "Sid": "VisualEditor5",
-            "Effect": "Allow",
-            "Action": "s3:Get*",
-            "Resource": "arn:aws:s3:::<site_project_name>/*"
-        },
-        {
-            "Sid": "VisualEditor6",
-            "Effect": "Allow",
-            "Action": "s3:Get*",
-            "Resource": "arn:aws:s3:::<site_project_name>"
         }
     ]
 }
 ```
-4. Provide the policy a name "static_site_deployer"
+3. Provide the policy a name "static_site_deployer_s3"
 
 #### Create IAM Group
 You may ask, "If there is only one user, why do we need a group". This construct is a recommendation from AWS. 
@@ -121,7 +137,7 @@ It ensures that you're able to add/remove/expand users to allow for new uses.
 
 1. Click "Groups" in the left Panel. Then "Create New Group"
 2. Give it a name like "static_site_deployer" here as well. 
-3. Search and Check the "static_site_deployer" policy that we just created. Click "Next Step".
+3. Search and Check the "static_site_deployer_cloudfront" and "static_site_deployer_s3" policies that we just created. Click "Next Step".
 4. At the summary page, you should see your Group Name and one policy listed. Click "Create Group"
 
 #### Create IAM User
@@ -211,7 +227,11 @@ Mac/Linux:
 Windows Powershell: 
 > $env:AWS_PROFILE="static_site_deployer"
 
-## 
+## Commands to deploy resources
 
+To preview what is about to happen in your account, you can use the "plan" functionality. 
+> terraform plan -var-file="example.tfvars" 
+
+If the plan looks good, you can then move onto deploying. It will print the same information is plan, but this time you'll be prompted for a Yes/No before the changes will be deployed to the account.
 > terraform apply -var-file="example.tfvars" 
 
