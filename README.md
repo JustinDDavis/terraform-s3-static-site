@@ -231,6 +231,9 @@ Windows Powershell:
 
 ## Commands to deploy resources
 
+After you have the CLI tools installed and some IAM keys configured, you can now issue the command that will have Terrafrom import all its necessary dependencies. 
+> terraform init
+
 To preview what is about to happen in your account, you can use the "plan" functionality. 
 > terraform plan -var-file="example.tfvars" 
 
